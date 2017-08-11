@@ -14,6 +14,7 @@ var membersid = -1;
 var FADE_TIME = 150; // ms
 var latestMsgDate = "";//最近一次聊天记录日期
 var scrollflag = true;
+var latestSendTime = ""; //最近一次发送聊天时间
 
 //Initialization user object,if there's more user attrs,add here.
 var user = {
@@ -108,11 +109,17 @@ function sendMessage() {
             content: msg,
             isread: currentRoomUserCount == 2 ? "1" : "0"
         }
-        addChatMessage(user, message, true,false); //add chatinfo to chatdiv
+        if (Date.parse(new Date()) -Date.parse(latestSendTime) <=100) {
+            addNotice("聊天消息发送太快，喝杯茶休息一下吧！");
+            return;
+        }
+        addChatMessage(user, message, true, false); //add chatinfo to chatdiv
         postMsg(message); //post messageinfo to storage
         sendAlert(message); //send alert to user
         // tell server to execute 'new message' and send along one parameter
         socket.emit('new message', user, message);
+        latestSendTime = new Date();
+
         $inputMessage.focus(); //focus after sent
     }
 }
@@ -318,9 +325,9 @@ $(function () {
         scrollArea: window,
         domUp: {
             domClass: 'dropload-up',
-            domRefresh: '',
-            domUpdate: '',
-            domLoad: '<div class="dropload-load"><span class="loading"></span>加载中-自定义内容...</div>'
+            domRefresh: '<div class="dropload-refresh" style="text-align:center;color: #999;">下拉加载</div>',
+            domUpdate: '<div class="dropload-update"  style="text-align:center;color: #999;">正在加载中...</div>',
+            domLoad: '<div class="dropload-load"  style="text-align:center;color: #999;"><span class="loading"></span>加载完成</div>'
         },
         loadUpFn: function (me) {
             if (!scrollflag) { me.resetload(); return; }

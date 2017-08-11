@@ -82,6 +82,7 @@ function loadMsg(roomId, isHistory) {
                     break;
                 case -1:
                     scrollflag = false; $("[role='loadGif']").hide();
+                    addNotice(e.msg);
                     break;
             }
         },
