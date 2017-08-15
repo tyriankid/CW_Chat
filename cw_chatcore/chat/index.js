@@ -23,7 +23,7 @@ io.on('connection', function (socket) {
     var roomName = '';
     socket.on('join room', function (roomname) {
         if (!roomname) { console.log("username incorrect ,stopping create room."); return false; }
-            socket.join(roomname+i, () => {
+            socket.join(roomname, () => {
                 let rooms = Object.keys(socket.rooms);
                 console.log(socket.rooms);//[<socket.id>, 'room 237' ]
             });

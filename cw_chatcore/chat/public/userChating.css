@@ -208,18 +208,19 @@ ul {
 .personList {
     display: none;
     font-size:0.7rem;
-    height:3rem;
+    height:9rem;
     background: rgba(215,215,215,0.8);
     padding-top: 0.4rem;
     overflow:scroll;
 }
     .personList li {
-        overflow:hidden;
-        margin-bottom:0.4rem;
-        display:flex;
-        align-items:center;
-        color:#ffffff;
-        position:relative;
+        overflow: hidden;
+        margin-bottom: 0.4rem;
+        margin-left: 0.4rem;
+        display: flex;
+        align-items: center;
+        color: #ffffff;
+        position: relative;
     }
         .personList li a span {
             float:left;

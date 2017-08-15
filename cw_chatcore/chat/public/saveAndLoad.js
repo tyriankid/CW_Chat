@@ -43,11 +43,27 @@ function postMsg(chatMsg) {
 * @author   HJ
 */
 var currentMsgDivHeight = 0;
-function loadMsg(roomId, isHistory) {
+var currentFileNum = -1;
+var msgList = new Array();
+var loadCount =10; //load message per draw
+function loadMsg(isHistory) {
+    if (msgList.length >= loadCount && currentFileNum != 0) {
+        loadArrayMsg(isHistory);
+    } else if (msgList.length < loadCount && currentFileNum != 0) {
+        loadAjaxMsg(isHistory);
+    } else {
+        loadArrayMsg(isHistory);
+    }
+    
+}
+
+//load msg through api and fill the msgList Array
+function loadAjaxMsg(isHistory) {
     //get the history message
-    var data = { roomId: roomId, msgDate: latestMsgDate, isHistory: isHistory };
+    var data = { roomId: roomid, fileNum: currentFileNum };
     var ajaxUrl = currentLocalhost + "/api/chatHandler.ashx?action=loadChatMessage";
     $.ajax({
+        async: false,
         type: 'get',
         url: ajaxUrl,
         data: data,
@@ -56,27 +72,13 @@ function loadMsg(roomId, isHistory) {
             switch (e.state) {
                 //if there are msgs
                 case 0:
-                    for (var i = 0; i < e.msgInfos.length; i++) {
-                        var hosterHistoryMsg = {
-                            roomid: e.msgInfos[i].roomid,
-                            userid: e.msgInfos[i].userid,
-                            sendtime: e.msgInfos[i].sendtime,
-                            content: e.msgInfos[i].content
-                        }
-                        if (e.msgInfos[i].userid == user.userid) {
-                            addChatMessage(user, hosterHistoryMsg, true, isHistory);
-                        }
-                        else if (e.msgInfos[i].userid == member.userid) {
-                            addChatMessage(member, hosterHistoryMsg, false, isHistory);
-                        }
+                    for (var i = e.msgInfos.length-1; i >=0 ; i--) {
+                        msgList.push(e.msgInfos[i]);
                     }
-                    //everytime loadmsg,keep current location
-                    $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight());
-                    currentMsgDivHeight = $messages.outerHeight();
-                    
-                    scrollflag = true;
+                    currentFileNum = e.fileNum - 1; //let the msg datafile count reduce 1
+                    loadArrayMsg(isHistory); //after push,then show
                     break;
-                    //there are not msg
+                //there are not msg
                 case 1:
                     scrollflag = false; $("[role='loadGif']").hide();
                     break;
@@ -87,11 +89,60 @@ function loadMsg(roomId, isHistory) {
             }
         },
         error: function (e) {
-            //console.log("今日无聊天记录或者加载出错");
             scrollflag = false; $("[role='loadGif']").hide();
-            
         }
     });
+}
+
+//read the msgList Array to show every msg
+function loadArrayMsg(isHistory) {
+    //if thers is no msg datafile to read,and array has not clear yet,let the loadcount equals the Array length
+    if (currentFileNum == 0 && msgList.length <= loadCount) {
+        loadCount = msgList.length;
+    }
+    //if there are more msg datafile to read,and Array length less than the loadcount,get more msgs to the Array.
+    if (msgList.length < loadCount && currentFileNum>=1) {
+        loadAjaxMsg(isHistory); //this is a recursion
+    }
+    //show the msgs,and splice the Array after showed.
+    for (var k = loadCount - 1; k >= 0; k--) {
+        if (!msgList[k]) {
+            addMessageElement(isHistory);
+            //after msgs showed,splice the msgs that showed
+            msgList.splice(0, (loadCount - k)); //当循环没有完毕时,循环数为每页加载数-k
+            break;
+        }
+        var hosterHistoryMsg = {
+            roomid: msgList[k].roomid,
+            userid: msgList[k].userid,
+            sendtime: msgList[k].sendtime,
+            content: msgList[k].content
+        }
+        if (msgList[k].userid == user.userid) {
+            addChatMessage(user, hosterHistoryMsg, true, isHistory);
+        }
+        else if (msgList[k].userid == member.userid) {
+            addChatMessage(member, hosterHistoryMsg, false, isHistory);
+        }
+        firstLoadCount++;
+        if (k == 0) {
+            addMessageElement(isHistory);
+            //after msgs showed,splice the msgs that showed
+            msgList.splice(0, loadCount); //当循环完毕时,循环次数为每页加载数.
+            break;
+        }
+    }
+
+    $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100;
+    currentMsgDivHeight = $messages.outerHeight();
+
+    if (msgList.length == 0 && currentFileNum < 1) {
+        scrollflag = false;
+    } else {
+        scrollflag = true;
+    }
+    
+    //$("body")[0].scrollTop = $("body").height();
 }
 
 /*

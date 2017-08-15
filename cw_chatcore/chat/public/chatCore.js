@@ -11,7 +11,7 @@ var currentRoomUserCount = 0;
 var roomid = "";
 var hosterid = -1;
 var membersid = -1;
-var FADE_TIME = 150; // ms
+var FADE_TIME = 350; // ms
 var latestMsgDate = "";//最近一次聊天记录日期
 var scrollflag = true;
 var latestSendTime = ""; //最近一次发送聊天时间
@@ -183,7 +183,7 @@ function addAlertMessage(sender, revicer ,message) {
         }
         //2:add an info to chatList
         var userMsgCount = senderMsgDic.get(sender.userid);
-        console.log(userMsgCount);
+
         if (userMsgCount) {
             userMsgCount++;
         } else {
@@ -289,10 +289,16 @@ function addChatMessage(user, msg, isMe, isHistory) {
             + '   </div>'
             + ' </div>'
             + ' </div></li>');
-    addMessageElement($messageDiv, isHistory);
+    //addMessageElement($messageDiv, isHistory);
+
+    $historyUl.append($messageDiv);  //暂放到ul内,待提交
+    if (!isHistory) {
+        addMessageElement(isHistory);
+    }
+    
 }
 
-
+var $historyUl = $('<ul></ul>');
 
 // Prevents input from having injected markup
 function cleanInput(input) {
@@ -300,24 +306,37 @@ function cleanInput(input) {
 }
 
 // Adds a message element to the messages and scrolls to the bottom
-var $historyUl = $('<ul id="chatArea_"' + latestMsgDate + '></ul>');
-function addMessageElement(el, isHistory) {
+var firstLoadCount=0
+function addMessageElement(isHistory) {
     $("#main").css({ "height": "32px" });
-    var $el = $(el);
     //if load history message,append. or prepend
     if (isHistory) {
-        $historyUl.append($el)
+        /*
+        $historyUl.append($el);
+        $messages.prepend($historyUl.html());
+        $historyUl.html('');
+        */
         $messages.prepend($historyUl.html());
         $historyUl.html('');
         //$messages[0].scrollTop = liHeight;
     } else {
+        /*
         $el.hide().fadeIn(FADE_TIME); //a fade animation
         $messages.append($el); //append the messageDiv
+        */
+        $historyUl.hide().fadeIn(FADE_TIME);
+        $messages.append($historyUl.html());
+        $historyUl.html('');
+        
+    }
+    
+    if (firstLoadCount <= loadCount) {
         $("body")[0].scrollTop = $("body").height(); //keep the latest message always jumping out
     }
    
 }
 
+var $loadingDiv = $('<div class="dropload-load"  style="text-align:center;color: #999;font-size:12px"><span class="loading"></span>加载中...</div>');
 $(function () {
     //server listening functions-------------------------------------------------------------------------------------------------------------------------
     // dropload
@@ -325,23 +344,21 @@ $(function () {
         scrollArea: window,
         domUp: {
             domClass: 'dropload-up',
-            domRefresh: '<div class="dropload-refresh" style="text-align:center;color: #999;">下拉加载</div>',
-            domUpdate: '<div class="dropload-update"  style="text-align:center;color: #999;">正在加载中...</div>',
-            domLoad: '<div class="dropload-load"  style="text-align:center;color: #999;"><span class="loading"></span>加载完成</div>'
+            domRefresh: '<div class="dropload-refresh" style="text-align:center;color: #999;font-size:12px">下拉加载...</div>',
+            domUpdate: '<div class="dropload-update"  style="text-align:center;color: #999;font-size:12px">释放加载...</div>',
+            domLoad: $loadingDiv,
         },
         loadUpFn: function (me) {
-            if (!scrollflag) { me.resetload(); return; }
-            scrollflag = false;
-            //只支持当月内的前一天聊天记录上拉刷新功能
-            var beforeday = new Date();
-            beforeday.setTime(newDate(latestMsgDate).getTime() - 1000 * 60 * 60 * 24);
-            latestMsgDate = beforeday.Format("yyyy-MM-dd hh:mm:ss");
-            loadMsg(roomid, true);
-            me.resetload();
+            if (!scrollflag) { $loadingDiv.html("没有更多的聊天记录!");me.resetload(); return; }
+            setTimeout(function () {
+                scrollflag = false;
+                loadMsg(true);
+                me.resetload();
+            }, 300);
+
         },
         threshold: 50
     });
-
 
 
     //listening login event
@@ -385,19 +402,7 @@ $(function () {
 
     //effect and tools and eventbinds ------------------------------------------------------------------------------------------------------
 
-    /*
-    $(document).scroll(function () {
-        if ($("body")[0].scrollTop == 0 && scrollflag == true) {
-            $("[role='loadGif']").show();
-            scrollflag = false;
-            //只支持当月内的前一天聊天记录上拉刷新功能
-            var beforeday = new Date();
-            beforeday.setTime(newDate(latestMsgDate).getTime() - 1000 * 60 * 60 * 24);
-            latestMsgDate = beforeday.Format("yyyy-MM-dd hh:mm:ss");
-            loadMsg(roomid, true);
-        }
-    });
-    */
+
 
 
     window.onload = function () {
@@ -405,9 +410,7 @@ $(function () {
         else decodeRoomAttr('‎');
         socket.emit('join room', roomid);
         getUserInfo();
-        //loadScrollDown();
     }
-    
     
     $(".fsBtn").click(function () {
         sendMessage();
@@ -418,7 +421,6 @@ $(function () {
         $("[role='msgCount']").remove();
         $(".personList").slideToggle(300);
     })
-    
     $(".inputMessage").focus(function () {
         $(this).css({ "border-bottom": "1px solid #40A700" })
     });
