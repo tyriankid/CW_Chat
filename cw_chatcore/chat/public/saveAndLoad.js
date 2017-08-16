@@ -133,10 +133,12 @@ function loadArrayMsg(isHistory) {
             break;
         }
     }
-
+    /*
     $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100;
+    console.log(Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100);
     currentMsgDivHeight = $messages.outerHeight();
-
+    console.log("11111停留!");
+    */
     if (msgList.length == 0 && currentFileNum < 1) {
         scrollflag = false;
     } else {

@@ -249,22 +249,15 @@ function addChatMessage(user, msg, isMe, isHistory) {
     var isQueue = Math.abs(Date.parse(dateMsg) - Date.parse(latestShowNoticeTime)) < 600000;
     //bool:是不是在这周内
     var weekStartDate = formatDate(new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() - dateNow.getDay() + 1));
-    console.log("这周一:" + weekStartDate);
     var isInThisWeek = Date.parse(dateMsg) - Date.parse(weekStartDate) > 0;
     if (!isQueue && dayC < 1 && dateMsg.getDay() == dateNow.getDay()) { //同一天内
-        console.log("同一天内");
         addNotice(dateMsg.Format("hh:mm"), isHistory); latestShowNoticeTime = newDate(msg.sendtime);
-        
     } else if (!isQueue && dateNow.getDay() - dateMsg.getDay() == 1 && dayC < 2) //昨天
     {
-        console.log("昨天");
         addNotice("昨天" + dateMsg.Format(" hh:mm"), isHistory); latestShowNoticeTime = newDate(msg.sendtime);
-        
     } else if (!isQueue && dayC > 1 && dateNow.getDay() - dateMsg.getDay() > 1 && isInThisWeek) //昨天之外,这周之内
     {
-        console.log("昨天之外,这周之内");
         addNotice("周" + toZhDigit(dateMsg.getDay()) + dateMsg.Format(" hh:mm"), isHistory); latestShowNoticeTime = newDate(msg.sendtime);
-        
     } else if (!isQueue && !isInThisWeek) {
         var timeStr = "";
         var hour = dateMsg.Format("hh");
@@ -279,11 +272,9 @@ function addChatMessage(user, msg, isMe, isHistory) {
         } else if (hour >= 18 && hour < 24) {
             timeStr = "晚上";
         }
-        console.log("这周之外");
         addNotice(dateMsg.Format("yyyy-MM-dd") + timeStr + dateMsg.Format("hh:mm"), isHistory); latestShowNoticeTime = newDate(msg.sendtime);
-        
     } else {
-        console.log("连续消息");
+        //连续消息或者出现漏网之鱼
     }
         
     var currentChatClass = isMe ? 'right' : 'left';
@@ -343,8 +334,11 @@ function addMessageElement(isHistory) {
     
     if (firstLoadCount <= loadCount) {
         $("body")[0].scrollTop = $("body").height(); //keep the latest message always jumping out
-    }
-   
+    } 
+    if (Math.abs(currentMsgDivHeight - $messages.outerHeight()) == 0) return;
+        $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100;
+        currentMsgDivHeight = $messages.outerHeight();
+
 }
 
 var $loadingDiv = $('<div class="dropload-load"  style="text-align:center;color: #999;font-size:12px"><span class="loading"></span>加载中...</div>');
@@ -457,8 +451,6 @@ $(function () {
 
 //like wechat, add a message to chat area
 function addNotice(msg, isHistory = false) {
-    if (msg)
-        console.log(msg.content + " " + msg.sendtime);
     var $noticeDiv = '<div class="noticeBox"><span class="noticeMessage">' + msg + '</span></div>';
     if (isHistory) {
         $historyUl.append($noticeDiv);
