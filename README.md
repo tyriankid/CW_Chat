@@ -1,2 +1,2 @@
 # CW_Chat
-a chat module in project cw
+一个基于socket.io的独立聊天系统
