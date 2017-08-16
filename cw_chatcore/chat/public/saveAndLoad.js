@@ -112,6 +112,7 @@ function loadArrayMsg(isHistory) {
             msgList.splice(0, (loadCount - k)); //当循环没有完毕时,循环数为每页加载数-k
             break;
         }
+        
         var hosterHistoryMsg = {
             roomid: msgList[k].roomid,
             userid: msgList[k].userid,
