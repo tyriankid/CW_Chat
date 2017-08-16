@@ -71,13 +71,13 @@ function getUserInfo() {
                 $("title").html(member.username); 
             }
             else {//if userid is not available,open guest mode
-                addNotice("非法的参数");
-                //loadGuestMode();
+                //addNotice("非法的参数");
+                loadGuestMode();
             }
         },
         error: function () {
-            addNotice("非法的参数");
-            //loadGuestMode();
+            //addNotice("非法的参数");
+            loadGuestMode();
         }
     });
 
