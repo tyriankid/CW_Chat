@@ -198,11 +198,13 @@ ul {
 .xfBox {
     width: 1.6rem;
     height: 1.6rem;
+    top:0.2rem !important;
 }
 
     .xfBox img {
-        width: 100%;
-        height: 100%;
+        width: 130%;
+        height: 130%;
+        max-width:none!important;
     }
 
 .personList {
@@ -281,3 +283,20 @@ ul {
 #main {
     max-height:80px;overflow: scroll;
 }
+.messNoticeBox {
+    position:fixed;
+    bottom:60px;
+    left:86%;
+    display:none;
+}
+.messNoticeBox  img{
+    width:34px;
+    height:34px;
+    display:inline-block;
+}
+    .messNoticeBox span {
+       position:absolute;
+       top: 5px;
+       left: 20%;
+       color: #ffffff;
+    }

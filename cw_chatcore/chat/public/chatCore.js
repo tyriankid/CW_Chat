@@ -295,7 +295,7 @@ function addChatMessage(user, msg, isMe, isHistory) {
 
     $historyUl.append($messageDiv);  //暂放到ul内,待提交
     if (!isHistory) {
-        addMessageElement(isHistory);
+        addMessageElement(isHistory,isMe);
     }
     
 }
@@ -307,64 +307,53 @@ function cleanInput(input) {
     return $('<div/>').text(input).text();
 }
 
+function inputMsg() {
+    $historyUl.hide().fadeIn(FADE_TIME);
+    $messages.append($historyUl.html());
+    $historyUl.html('');
+}
+
 // Adds a message element to the messages and scrolls to the bottom
-var firstLoadCount=0
-function addMessageElement(isHistory) {
+var firstLoadCount = 0;
+var notreadmsgBubbleNum = 0;
+function addMessageElement(isHistory, isMe) {
+    var totalheight = parseFloat($(window).height()) + parseFloat($(window).scrollTop());
+    console.log(($(document).height()) + " " + totalheight);
     $("#main").css({ "height": "32px" });
     //if load history message,append. or prepend
     if (isHistory) {
-        /*
-        $historyUl.append($el);
         $messages.prepend($historyUl.html());
         $historyUl.html('');
-        */
-        $messages.prepend($historyUl.html());
-        $historyUl.html('');
-        //$messages[0].scrollTop = liHeight;
-    } else {
-        /*
-        $el.hide().fadeIn(FADE_TIME); //a fade animation
-        $messages.append($el); //append the messageDiv
-        */
-        $historyUl.hide().fadeIn(FADE_TIME);
-        $messages.append($historyUl.html());
-        $historyUl.html('');
-        
-    }
-    
-    if (firstLoadCount <= loadCount) {
-        $("body")[0].scrollTop = $("body").height(); //keep the latest message always jumping out
-    } 
-    if (Math.abs(currentMsgDivHeight - $messages.outerHeight()) == 0) return;
+        //when load history msg,keep current location to show the new msgs loading.
+        if (Math.abs(currentMsgDivHeight - $messages.outerHeight()) == 0) return;
         $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100;
         currentMsgDivHeight = $messages.outerHeight();
+    } else {
+        //when get new message and not looking at bottom,show the bubble.
+        
+        if (($(document).height()) > totalheight && !isMe) {  //没有到底收到消息时,展示泡泡
+            notreadmsgBubbleNum++;
+            $(".messNoticeBox").show().find("span").html(notreadmsgBubbleNum).css("left", notreadmsgBubbleNum >= 10 ? "20%" : "35%");
+            inputMsg();
+        } else if (($(document).height()) <= totalheight && !isMe) {  //到底了收到消息时,继续到底
+            inputMsg();
+            $("body")[0].scrollTop = $("body").height();
+        } else if (isMe){ //自己发消息时永远在最底部
+            inputMsg();
+            $("body")[0].scrollTop = $("body").height();
+        }
+    }
 
+    if (firstLoadCount <= loadCount && isMe) {
+        $("body")[0].scrollTop = $("body").height(); //keep the latest message always jumping out
+    }
+
+    
 }
 
 var $loadingDiv = $('<div class="dropload-load"  style="text-align:center;color: #999;font-size:12px"><span class="loading"></span>加载中...</div>');
 $(function () {
     //server listening functions-------------------------------------------------------------------------------------------------------------------------
-    // dropload
-    $('#chatArea').dropload({
-        scrollArea: window,
-        domUp: {
-            domClass: 'dropload-up',
-            domRefresh: '<div class="dropload-refresh" style="text-align:center;color: #999;font-size:12px">下拉加载...</div>',
-            domUpdate: '<div class="dropload-update"  style="text-align:center;color: #999;font-size:12px">释放加载...</div>',
-            domLoad: $loadingDiv,
-        },
-        loadUpFn: function (me) {
-            if (!scrollflag) { $loadingDiv.html("没有更多的聊天记录!");me.resetload(); return; }
-            setTimeout(function () {
-                scrollflag = false;
-                loadMsg(true);
-                me.resetload();
-            }, 300);
-
-        },
-        threshold: 50
-    });
-
 
     //listening login event
     socket.on('login', function (data) {
@@ -407,16 +396,50 @@ $(function () {
 
     //effect and tools and eventbinds ------------------------------------------------------------------------------------------------------
 
-
-
-
+   
     window.onload = function () {
         if (GetQueryString("tp") == "wx") decodeRoomAttr('|');
         else decodeRoomAttr('‎');
         socket.emit('join room', roomid);
         getUserInfo();
     }
-    
+
+    // dropload
+    $('#chatArea').dropload({
+        scrollArea: window,
+        domUp: {
+            domClass: 'dropload-up',
+            domRefresh: '<div class="dropload-refresh" style="text-align:center;color: #999;font-size:12px">下拉加载...</div>',
+            domUpdate: '<div class="dropload-update"  style="text-align:center;color: #999;font-size:12px">释放加载...</div>',
+            domLoad: $loadingDiv,
+        },
+        loadUpFn: function (me) {
+            if (!scrollflag) { $loadingDiv.html("没有更多的聊天记录!"); me.resetload(); return; }
+            setTimeout(function () {
+                scrollflag = false;
+                loadMsg(true);
+                me.resetload();
+            }, 300);
+
+        },
+        threshold: 50
+    });
+
+    $(window).scroll(function () {
+        totalheight = parseFloat($(window).height()) + parseFloat($(window).scrollTop());
+        if (($(document).height()) <= totalheight) {
+            //when reach bottom,clear the bubble num to 0,and hide bubble
+            notreadmsgBubbleNum = 0;
+            $(".messNoticeBox").hide();
+        }
+    })
+
+    $(".messNoticeBox").click(function () {
+        $("body")[0].scrollTop = $("body").height();
+        notreadmsgBubbleNum = 0;
+        $(this).hide();
+    });
+
     $(".fsBtn").click(function () {
         sendMessage();
     });
@@ -450,14 +473,15 @@ $(function () {
 });
 
 //like wechat, add a message to chat area
-function addNotice(msg, isHistory = false) {
+function addNotice(msg, isHistory = false, important = false) {
     var $noticeDiv = '<div class="noticeBox"><span class="noticeMessage">' + msg + '</span></div>';
     if (isHistory) {
         $historyUl.append($noticeDiv);
     } else {
         $messages.append($noticeDiv);
+    }
+    if (important) {
         $("body")[0].scrollTop = $("body").height();
-        //$messages[0].scrollTop = $messages[0].scrollHeight; //keep the latest message always jumping out
     }
 }
 
