@@ -42,7 +42,7 @@ var message = {
 }
 
 
-    
+
 function getUserInfo() {
     if (!isIdValidate) return false;
     var ajaxUrl = currentLocalhost + "/api/chatHandler.ashx?action=getUserInfoByIds&hosterid=" + hosterid + "&membersid=" + membersid;//+ "&jsoncallback=?";
@@ -65,10 +65,10 @@ function getUserInfo() {
                 member.roomid = roomid;
                 // Tell the server your username
                 socket.emit('add user', user);
-                
+
                 loadDialogList(user.userid);
                 //set title
-                $("title").html(member.username); 
+                $("title").html(member.username);
             }
             else {//if userid is not available,open guest mode
                 addNotice("非法的参数");
@@ -109,7 +109,7 @@ function sendMessage() {
             content: msg,
             isread: currentRoomUserCount == 2 ? "1" : "0"
         }
-        if (Date.parse(new Date()) -Date.parse(latestSendTime) <=100) {
+        if (Date.parse(new Date()) - Date.parse(latestSendTime) <= 100) {
             addNotice("聊天消息发送太快，喝杯茶休息一下吧！");
             return;
         }
@@ -127,7 +127,7 @@ function sendMessage() {
 function sendWeixinMessage(sender, reciver, message) {
     var data;
     if (user.userid = sender.userid) { //如果发送者是主持者
-        data = { hosterid: sender.userid, memberid: reciver.userid};
+        data = { hosterid: sender.userid, memberid: reciver.userid };
     } else { //如果发送者不是主持者
         data = { hosterid: reciver.userid, memberid: sender.userid };
     }
@@ -139,7 +139,7 @@ function sendWeixinMessage(sender, reciver, message) {
         dataType: "json",
         success: function (e) {
             switch (e.state) {
-                case 0: 
+                case 0:
                     break;
                 default:
                     addNotice(e.msg);
@@ -154,11 +154,10 @@ function sendWeixinMessage(sender, reciver, message) {
 function sendAlert(message) {
     //alert(isMemberJoin);
     //首先判断接收方是否在该房间内,若在,则无需推送
-    if (currentRoomUserCount==2) return;
-
+    if (currentRoomUserCount == 2) return;
     //发送服务端相应事件,若接收者当前在别的房间,他可以收到消息推送.
     socket.emit('send alert', user, member, message);
-
+    //发送微信消息推送
     sendWeixinMessage(user, member, message);
 }
 
@@ -170,7 +169,7 @@ function sendAlert(message) {
 */
 var msgCount = 0;
 var senderMsgDic = new Dic();
-function addAlertMessage(sender, revicer ,message) {
+function addAlertMessage(sender, revicer, message) {
     if (revicer.userid == user.userid) { //receive a new message from other room
         msgCount++;
         var $chatListBtn = $(".xfBox");
@@ -179,7 +178,7 @@ function addAlertMessage(sender, revicer ,message) {
         if (msgCount == 1) {
             $chatListBtn.prepend($countSpan);
         } else {
-            $("[role='msgCount']") .html(msgCount);
+            $("[role='msgCount']").html(msgCount);
         }
         //2:add an info to chatList
         var userMsgCount = senderMsgDic.get(sender.userid);
@@ -190,7 +189,7 @@ function addAlertMessage(sender, revicer ,message) {
             userMsgCount = 1;
         }
         senderMsgDic.set(sender.userid, userMsgCount);
-        var $chatInfoLi = $('<li ><a><span class="role">' + sender.userrole + '</span><span class="rolePic"><img src="' + sender.userhead +'" /></span><span class="roleName">' + sender.username + '</span></a><span>（<k senderid="' + sender.userid + '">' + userMsgCount + '</k>条未读消息）</span></li>');
+        var $chatInfoLi = $('<li ><a><span class="role">' + sender.userrole + '</span><span class="rolePic"><img src="' + sender.userhead + '" /></span><span class="roleName">' + sender.username + '</span></a><span>（<k senderid="' + sender.userid + '">' + userMsgCount + '</k>条未读消息）</span></li>');
         //$chatInfoLi.find("a").attr("href", "userchat.html?hosterid=" + revicer.userid + "&membersid=" + sender.userid + "&id=" + sender.roomid);
         var locationstr = "userChat.html?k=";
         var attrstr = getChatAttrs(revicer.userid, sender.userid);
@@ -211,7 +210,7 @@ function addAlertMessage(sender, revicer ,message) {
     } else {
         console.log("你收到了来自" + sender.username + "的一条在线消息!但我不是接收者");
     }
-    
+
 }
 
 function newDate(datestr) {
@@ -228,7 +227,7 @@ function newDate(datestr) {
 */
 var latestShowNoticeTime = new Date("2009-07-13");
 function addChatMessage(user, msg, isMe, isHistory) {
-    
+
     var minute = 1000 * 60;
     var hour = minute * 60;
     var day = hour * 24;
@@ -239,7 +238,7 @@ function addChatMessage(user, msg, isMe, isHistory) {
 
     var dateNow = new Date();
     var difftime = Date.parse(dateNow) - Date.parse(dateMsg);
-        
+
     var monthC = difftime / month;
     var weekC = difftime / (7 * day);
     var dayC = difftime / day;
@@ -250,12 +249,12 @@ function addChatMessage(user, msg, isMe, isHistory) {
     //bool:是不是在这周内
     var weekStartDate = formatDate(new Date(dateNow.getFullYear(), dateNow.getMonth(), dateNow.getDate() - dateNow.getDay() + 1));
     var isInThisWeek = Date.parse(dateMsg) - Date.parse(weekStartDate) > 0;
-    if (!isQueue && dayC < 1 && dateMsg.getDay() == dateNow.getDay()) {//同一天内
+    if (!isQueue && dayC < 1 && dateMsg.getDay() == dateNow.getDay()) { //同一天内
         addNotice(dateMsg.Format("hh:mm"), isHistory); latestShowNoticeTime = newDate(msg.sendtime);
-    } else if (!isQueue && dateNow.getDay() - dateMsg.getDay() == 1 && dayC < 2)//昨天
+    } else if (!isQueue && dateNow.getDay() - dateMsg.getDay() == 1 && dayC < 2) //昨天
     {
         addNotice("昨天" + dateMsg.Format(" hh:mm"), isHistory); latestShowNoticeTime = newDate(msg.sendtime);
-    } else if (!isQueue && dayC > 2 && dateNow.getDay() - dateMsg.getDay() > 1 && isInThisWeek)//前天之外,这周之内
+    } else if (!isQueue && dayC > 1 && dateNow.getDay() - dateMsg.getDay() > 1 && isInThisWeek) //昨天之外,这周之内
     {
         addNotice("周" + toZhDigit(dateMsg.getDay()) + dateMsg.Format(" hh:mm"), isHistory); latestShowNoticeTime = newDate(msg.sendtime);
     } else if (!isQueue && !isInThisWeek) {
@@ -273,8 +272,10 @@ function addChatMessage(user, msg, isMe, isHistory) {
             timeStr = "晚上";
         }
         addNotice(dateMsg.Format("yyyy-MM-dd") + timeStr + dateMsg.Format("hh:mm"), isHistory); latestShowNoticeTime = newDate(msg.sendtime);
+    } else {
+        //连续消息或者出现漏网之鱼
     }
-        
+
     var currentChatClass = isMe ? 'right' : 'left';
     var $messageDiv =
         $('<li style="overflow: hidden;"><div role="mainMsgDiv" class="aui-chat-item aui-chat-' + currentChatClass + '" >'
@@ -293,9 +294,9 @@ function addChatMessage(user, msg, isMe, isHistory) {
 
     $historyUl.append($messageDiv);  //暂放到ul内,待提交
     if (!isHistory) {
-        addMessageElement(isHistory);
+        addMessageElement(isHistory, isMe);
     }
-    
+
 }
 
 var $historyUl = $('<ul></ul>');
@@ -305,68 +306,63 @@ function cleanInput(input) {
     return $('<div/>').text(input).text();
 }
 
+function inputMsg() {
+    $historyUl.hide().fadeIn(FADE_TIME);
+    $messages.append($historyUl.html());
+    $historyUl.html('');
+}
+
 // Adds a message element to the messages and scrolls to the bottom
-var firstLoadCount=0
-function addMessageElement(isHistory) {
+var firstLoadCount = 0;
+var notreadmsgBubbleNum = 0;
+function addMessageElement(isHistory, isMe) {
+    var totalheight = parseFloat($(window).height()) + parseFloat($(window).scrollTop());
+    var isFirstLoadMsg = $("#chatArea").find("li").length == 0;
+    //console.log(($(document).height()) + " " + totalheight);
     $("#main").css({ "height": "32px" });
     //if load history message,append. or prepend
     if (isHistory) {
-        /*
-        $historyUl.append($el);
         $messages.prepend($historyUl.html());
         $historyUl.html('');
-        */
-        $messages.prepend($historyUl.html());
-        $historyUl.html('');
-        //$messages[0].scrollTop = liHeight;
+        //when load history msg,keep current location to show the new msgs loading.
+        console.log(currentMsgDivHeight + " " + $messages.outerHeight());
+        if (Math.abs(currentMsgDivHeight - $messages.outerHeight()) == 0) return;
+        $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100;
+        currentMsgDivHeight = $messages.outerHeight();
     } else {
-        /*
-        $el.hide().fadeIn(FADE_TIME); //a fade animation
-        $messages.append($el); //append the messageDiv
-        */
-        $historyUl.hide().fadeIn(FADE_TIME);
-        $messages.append($historyUl.html());
-        $historyUl.html('');
-        
+        //when get new message and not looking at bottom,show the bubble.
+
+        if (($(document).height()) > totalheight && !isMe) {  //没有到底收到消息时,展示泡泡
+            notreadmsgBubbleNum++;
+            $(".messNoticeBox").show().find("span").html(notreadmsgBubbleNum).css("left", notreadmsgBubbleNum >= 10 ? "20%" : "35%");
+            inputMsg();
+        } else if (($(document).height()) <= totalheight && !isMe) {  //到底了收到消息时,继续到底
+            inputMsg();
+            $("body")[0].scrollTop = $("body").height();
+        } else if (isMe) { //自己发消息时永远在最底部
+            inputMsg();
+            $("body")[0].scrollTop = $("body").height();
+        }
     }
-    
-    if (firstLoadCount <= loadCount) {
+
+    console.log(isFirstLoadMsg);
+    if (isFirstLoadMsg && isMe) {
         $("body")[0].scrollTop = $("body").height(); //keep the latest message always jumping out
     }
-   
+
+
 }
 
 var $loadingDiv = $('<div class="dropload-load"  style="text-align:center;color: #999;font-size:12px"><span class="loading"></span>加载中...</div>');
 $(function () {
     //server listening functions-------------------------------------------------------------------------------------------------------------------------
-    // dropload
-    $('#chatArea').dropload({
-        scrollArea: window,
-        domUp: {
-            domClass: 'dropload-up',
-            domRefresh: '<div class="dropload-refresh" style="text-align:center;color: #999;font-size:12px">下拉加载...</div>',
-            domUpdate: '<div class="dropload-update"  style="text-align:center;color: #999;font-size:12px">释放加载...</div>',
-            domLoad: $loadingDiv,
-        },
-        loadUpFn: function (me) {
-            if (!scrollflag) { $loadingDiv.html("没有更多的聊天记录!");me.resetload(); return; }
-            setTimeout(function () {
-                scrollflag = false;
-                loadMsg(true);
-                me.resetload();
-            }, 300);
-
-        },
-        threshold: 50
-    });
-
 
     //listening login event
     socket.on('login', function (data) {
         currentRoomUserCount = data.roomusercount;
         console.log("当前人数:" + currentRoomUserCount);
         //if reciver not in this room,add an offline notice
-        if (currentRoomUserCount < 2 ) {
+        if (currentRoomUserCount < 2) {
             addNotice("对方不在线，消息将以微信推送和留言形式转达");
         }
         connected = true;
@@ -376,8 +372,8 @@ $(function () {
         addChatMessage(user, msg, false, false);
     });
     // Whenever the server emits 'alert message', update the chatUserList body
-    socket.on('alert message', function (sender,reciver,message) {
-        addAlertMessage(sender, reciver ,message);
+    socket.on('alert message', function (sender, reciver, message) {
+        addAlertMessage(sender, reciver, message);
     });
     // Whenever the server emits 'send wxmsg', send the wxmsg to reciver
     socket.on('send wxmsg', function (sender, reciver, message) {
@@ -392,7 +388,7 @@ $(function () {
         console.log("当前人数:" + currentRoomUserCount);
         addNotice(data.username + "加入了对话");
     });
-//when user left,add a notice
+    //when user left,add a notice
     socket.on('user left', function (data) {
         currentRoomUserCount = data.roomusercount;
         console.log("当前人数:" + currentRoomUserCount);
@@ -403,15 +399,49 @@ $(function () {
     //effect and tools and eventbinds ------------------------------------------------------------------------------------------------------
 
 
-
-
     window.onload = function () {
         if (GetQueryString("tp") == "wx") decodeRoomAttr('|');
         else decodeRoomAttr('‎');
         socket.emit('join room', roomid);
         getUserInfo();
     }
-    
+
+    // dropload
+    $('#chatArea').dropload({
+        scrollArea: window,
+        domUp: {
+            domClass: 'dropload-up',
+            domRefresh: '<div class="dropload-refresh" style="text-align:center;color: #999;font-size:12px">下拉加载...</div>',
+            domUpdate: '<div class="dropload-update"  style="text-align:center;color: #999;font-size:12px">释放加载...</div>',
+            domLoad: $loadingDiv,
+        },
+        loadUpFn: function (me) {
+            if (!scrollflag) { $loadingDiv.html("没有更多的聊天记录!"); me.resetload(); return; }
+            setTimeout(function () {
+                scrollflag = false;
+                loadMsg(true);
+                me.resetload();
+            }, 300);
+
+        },
+        threshold: 50
+    });
+
+    $(window).scroll(function () {
+        totalheight = parseFloat($(window).height()) + parseFloat($(window).scrollTop());
+        if (($(document).height()) <= totalheight) {
+            //when reach bottom,clear the bubble num to 0,and hide bubble
+            notreadmsgBubbleNum = 0;
+            $(".messNoticeBox").hide();
+        }
+    });
+
+    $(".messNoticeBox").click(function () {
+        $("body")[0].scrollTop = $("body").height();
+        notreadmsgBubbleNum = 0;
+        $(this).hide();
+    });
+
     $(".fsBtn").click(function () {
         sendMessage();
     });
@@ -422,12 +452,17 @@ $(function () {
         $(".personList").slideToggle(300);
     })
     $(".inputMessage").focus(function () {
-        $(this).css({ "border-bottom": "1px solid #40A700" })
+        $(this).css({ "border-bottom": "1px solid #40A700" });
+    });
+    $(".inputMessage").click(function () {
+        setTimeout(function () {
+            $("body")[0].scrollTop = $("body").height();
+        }, 400);
     });
     $(".inputMessage").blur(function () {
         $(this).css({ "border-bottom": "1px solid #c3c3c3" })
     });
-    
+
     $window.keydown(function (event) {
         // Auto-focus the current input when a key is typed
         if (!(event.ctrlKey || event.metaKey || event.altKey)) {
@@ -440,20 +475,18 @@ $(function () {
             }
         }
     });
-
-
 });
 
 //like wechat, add a message to chat area
-function addNotice(msg,isHistory = false) {
+function addNotice(msg, isHistory = false, important = true) {
     var $noticeDiv = '<div class="noticeBox"><span class="noticeMessage">' + msg + '</span></div>';
     if (isHistory) {
         $historyUl.append($noticeDiv);
     } else {
         $messages.append($noticeDiv);
-        $("body")[0].scrollTop = $("body").height();
-        //$messages[0].scrollTop = $messages[0].scrollHeight; //keep the latest message always jumping out
     }
+    $("body")[0].scrollTop = $("body").height();
+
 }
 
 // 对Date的扩展，将 Date 转化为指定格式的String
@@ -490,7 +523,7 @@ function formatDate(date) {
         myweekday = "0" + myweekday;
     }
     return (myyear + "-" + mymonth + "-" + myweekday);
-} 
+}
 /**
     * 阿拉伯数字转中文数字,
     * 如果传入数字时则最多处理到21位，超过21位js会自动将数字表示成科学计数法，导致精度丢失和处理出错
@@ -639,12 +672,12 @@ function decodeRoomAttr(fgf) {
         else if (i > 1 && i <= 3)
             result.push(a[i] ^ attrKey);
     }
-    
+
     roomid = result[0] + '‎' + result[1];
     hosterid = result[2];
     membersid = result[3];
     if (roomid.indexOf(hosterid) < 0 || roomid.indexOf(membersid) < 0) {
-        addNotice("id不匹配"); 
+        addNotice("id不匹配");
     } else {
         isIdValidate = true;
     }

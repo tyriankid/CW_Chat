@@ -14,8 +14,8 @@ function postMsg(chatMsg) {
     var messageJson = JSON.stringify(msgarray);
     if (msgarray.length < 1) return false;
     //post the message json to storage
-    var data = { messageJson: messageJson} //{ messageJson: JSON.stringify(chatMsg) };
-    
+    var data = { messageJson: messageJson } //{ messageJson: JSON.stringify(chatMsg) };
+
     var ajaxUrl = currentLocalhost + "/api/chatHandler.ashx?action=saveChatMessage";
     $.ajax({
         type: 'POST',
@@ -45,7 +45,7 @@ function postMsg(chatMsg) {
 var currentMsgDivHeight = 0;
 var currentFileNum = -1;
 var msgList = new Array();
-var loadCount =10; //load message per draw
+var loadCount = 10; //load message per draw
 function loadMsg(isHistory) {
     if (msgList.length >= loadCount && currentFileNum != 0) {
         loadArrayMsg(isHistory);
@@ -54,7 +54,6 @@ function loadMsg(isHistory) {
     } else {
         loadArrayMsg(isHistory);
     }
-    
 }
 
 //load msg through api and fill the msgList Array
@@ -72,9 +71,10 @@ function loadAjaxMsg(isHistory) {
             switch (e.state) {
                 //if there are msgs
                 case 0:
-                    for (var i = e.msgInfos.length-1; i >=0 ; i--) {
+                    for (var i = e.msgInfos.length - 1; i >= 0; i--) {
                         msgList.push(e.msgInfos[i]);
                     }
+                    console.log("after push:" + msgList.length);
                     currentFileNum = e.fileNum - 1; //let the msg datafile count reduce 1
                     loadArrayMsg(isHistory); //after push,then show
                     break;
@@ -101,8 +101,9 @@ function loadArrayMsg(isHistory) {
         loadCount = msgList.length;
     }
     //if there are more msg datafile to read,and Array length less than the loadcount,get more msgs to the Array.
-    if (msgList.length < loadCount && currentFileNum>=1) {
+    if (msgList.length < loadCount && currentFileNum >= 1) {
         loadAjaxMsg(isHistory); //this is a recursion
+        return; //remember return
     }
     //show the msgs,and splice the Array after showed.
     for (var k = loadCount - 1; k >= 0; k--) {
@@ -112,6 +113,7 @@ function loadArrayMsg(isHistory) {
             msgList.splice(0, (loadCount - k)); //当循环没有完毕时,循环数为每页加载数-k
             break;
         }
+
         var hosterHistoryMsg = {
             roomid: msgList[k].roomid,
             userid: msgList[k].userid,
@@ -133,16 +135,12 @@ function loadArrayMsg(isHistory) {
         }
     }
 
-    $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100;
-    currentMsgDivHeight = $messages.outerHeight();
-
     if (msgList.length == 0 && currentFileNum < 1) {
         scrollflag = false;
     } else {
         scrollflag = true;
     }
-    
-    //$("body")[0].scrollTop = $("body").height();
+
 }
 
 /*
@@ -170,28 +168,28 @@ function loadDialogList(userid) {
                             var attrstr = getChatAttrs(e.Data[i].FQUserId, e.Data[i].JSUserId);
                             $chatInfoLi.find("a").attr("href", locationstr + escape(attrstr));
                             //$chatInfoLi.find("a").attr("href", "http://localhost:3000/userChat.html?k=" + compileStr("&hosterid=" + e.Data[i].FQUserId + "&membersid=" + e.Data[i].JSUserId + "&id=" + e.Data[i].RoomNum));
-                        }    
-                        else{
+                        }
+                        else {
                             $chatInfoLi = $('<li  reciverId="' + e.Data[i].FQUserId + '"><a><span class="role">' + e.Data[i].FQRoleInfo + '</span><span class="rolePic"><img src="' + e.Data[i].FQUserHead + '" /></span><span class="roleName">' + e.Data[i].FQUserName + '</span></a></li>');
                             var attrstr = getChatAttrs(e.Data[i].JSUserId, e.Data[i].FQUserId);
                             $chatInfoLi.find("a").attr("href", locationstr + escape(attrstr));
                         }
                         //获取当前双方最近一次聊天记录的时间
                         if ((e.Data[i].FQUserId == user.userid && e.Data[i].JSUserId == member.userid) || (e.Data[i].FQUserId == member.userid && e.Data[i].JSUserId == user.userid)) {
-                            latestMsgDate = e.Data[i].CreateTime.replace("T"," ");
+                            latestMsgDate = e.Data[i].CreateTime.replace("T", " ");
                         }
                         var $chatList = $(".personList");
                         $chatList.prepend($chatInfoLi);
                     }
-                    loadMsg(roomid); //load the history msgs
+                    loadMsg(true); //load the history msgs
                     break;
                 default:
-                    if (e.msg) { addNotice(e.msg);}
+                    if (e.msg) { addNotice(e.msg); }
                     break;
             }
         },
         error: function (e) {
-            
+
         }
     });
 }
