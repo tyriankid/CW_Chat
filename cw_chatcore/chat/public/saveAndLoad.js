@@ -54,7 +54,6 @@ function loadMsg(isHistory) {
     } else {
         loadArrayMsg(isHistory);
     }
-    
 }
 
 //load msg through api and fill the msgList Array
@@ -75,6 +74,7 @@ function loadAjaxMsg(isHistory) {
                     for (var i = e.msgInfos.length-1; i >=0 ; i--) {
                         msgList.push(e.msgInfos[i]);
                     }
+                    console.log("after push:" + msgList.length);
                     currentFileNum = e.fileNum - 1; //let the msg datafile count reduce 1
                     loadArrayMsg(isHistory); //after push,then show
                     break;
@@ -101,8 +101,9 @@ function loadArrayMsg(isHistory) {
         loadCount = msgList.length;
     }
     //if there are more msg datafile to read,and Array length less than the loadcount,get more msgs to the Array.
-    if (msgList.length < loadCount && currentFileNum>=1) {
+    if (msgList.length < loadCount && currentFileNum >= 1) {
         loadAjaxMsg(isHistory); //this is a recursion
+        return; //remember return
     }
     //show the msgs,and splice the Array after showed.
     for (var k = loadCount - 1; k >= 0; k--) {
@@ -133,19 +134,13 @@ function loadArrayMsg(isHistory) {
             break;
         }
     }
-    /*
-    $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100;
-    console.log(Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100);
-    currentMsgDivHeight = $messages.outerHeight();
-    console.log("11111停留!");
-    */
+
     if (msgList.length == 0 && currentFileNum < 1) {
         scrollflag = false;
     } else {
         scrollflag = true;
     }
     
-    //$("body")[0].scrollTop = $("body").height();
 }
 
 /*
@@ -186,7 +181,7 @@ function loadDialogList(userid) {
                         var $chatList = $(".personList");
                         $chatList.prepend($chatInfoLi);
                     }
-                    loadMsg(roomid); //load the history msgs
+                    loadMsg(true); //load the history msgs
                     break;
                 default:
                     if (e.msg) { addNotice(e.msg);}

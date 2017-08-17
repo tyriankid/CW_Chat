@@ -155,10 +155,9 @@ function sendAlert(message) {
     //alert(isMemberJoin);
     //首先判断接收方是否在该房间内,若在,则无需推送
     if (currentRoomUserCount==2) return;
-
     //发送服务端相应事件,若接收者当前在别的房间,他可以收到消息推送.
     socket.emit('send alert', user, member, message);
-
+    //发送微信消息推送
     sendWeixinMessage(user, member, message);
 }
 
@@ -318,13 +317,15 @@ var firstLoadCount = 0;
 var notreadmsgBubbleNum = 0;
 function addMessageElement(isHistory, isMe) {
     var totalheight = parseFloat($(window).height()) + parseFloat($(window).scrollTop());
-    console.log(($(document).height()) + " " + totalheight);
+    var isFirstLoadMsg = $("#chatArea").find("li").length == 0;
+    //console.log(($(document).height()) + " " + totalheight);
     $("#main").css({ "height": "32px" });
     //if load history message,append. or prepend
     if (isHistory) {
         $messages.prepend($historyUl.html());
         $historyUl.html('');
         //when load history msg,keep current location to show the new msgs loading.
+        console.log(currentMsgDivHeight +" "+ $messages.outerHeight());
         if (Math.abs(currentMsgDivHeight - $messages.outerHeight()) == 0) return;
         $("body")[0].scrollTop = Math.abs(currentMsgDivHeight - $messages.outerHeight()) - 100;
         currentMsgDivHeight = $messages.outerHeight();
@@ -344,7 +345,8 @@ function addMessageElement(isHistory, isMe) {
         }
     }
 
-    if (firstLoadCount <= loadCount && isMe) {
+    console.log(isFirstLoadMsg);
+    if (isFirstLoadMsg && isMe) {
         $("body")[0].scrollTop = $("body").height(); //keep the latest message always jumping out
     }
 
@@ -361,7 +363,7 @@ $(function () {
         console.log("当前人数:" + currentRoomUserCount);
         //if reciver not in this room,add an offline notice
         if (currentRoomUserCount < 2 ) {
-            addNotice("对方不在线，消息将以微信推送和留言形式转达");
+            addNotice("对方不在线，消息将以微信推送和留言形式转达",true);
         }
         connected = true;
     });
