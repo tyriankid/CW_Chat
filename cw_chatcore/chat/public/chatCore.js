@@ -363,7 +363,7 @@ $(function () {
         console.log("当前人数:" + currentRoomUserCount);
         //if reciver not in this room,add an offline notice
         if (currentRoomUserCount < 2 ) {
-            addNotice("对方不在线，消息将以微信推送和留言形式转达",true);
+            addNotice("对方不在线，消息将以微信推送和留言形式转达");
         }
         connected = true;
     });
@@ -434,7 +434,8 @@ $(function () {
             notreadmsgBubbleNum = 0;
             $(".messNoticeBox").hide();
         }
-    })
+    });
+
 
     $(".messNoticeBox").click(function () {
         $("body")[0].scrollTop = $("body").height();
@@ -452,7 +453,12 @@ $(function () {
         $(".personList").slideToggle(300);
     })
     $(".inputMessage").focus(function () {
-        $(this).css({ "border-bottom": "1px solid #40A700" })
+        $(this).css({ "border-bottom": "1px solid #40A700" });
+    });
+    $(".inputMessage").click(function () {
+        setTimeout(function () {
+            $("body")[0].scrollTop = $("body").height();
+        }, 400);
     });
     $(".inputMessage").blur(function () {
         $(this).css({ "border-bottom": "1px solid #c3c3c3" })
@@ -475,16 +481,15 @@ $(function () {
 });
 
 //like wechat, add a message to chat area
-function addNotice(msg, isHistory = false, important = false) {
+function addNotice(msg, isHistory = false, important = true) {
     var $noticeDiv = '<div class="noticeBox"><span class="noticeMessage">' + msg + '</span></div>';
     if (isHistory) {
         $historyUl.append($noticeDiv);
     } else {
         $messages.append($noticeDiv);
     }
-    if (important) {
-        $("body")[0].scrollTop = $("body").height();
-    }
+    $("body")[0].scrollTop = $("body").height();
+
 }
 
 // 对Date的扩展，将 Date 转化为指定格式的String
