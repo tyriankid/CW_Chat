@@ -41,11 +41,20 @@ function addUserToDic(user) {
 
 //guest mode
 function loadGuestMode() {
-    var rdmId = Math.ceil(Math.random() * 10000);
-    for (var i = 0; i < 2; i = 1) {
-        if (!userList.get(rdmId)) break;
-        else rdmId = Math.ceil(Math.random() * 10000);
+    
+    var localUserid = localStorage.getItem("myUserId");
+    var rdmId;
+    if (localUserid) {
+        rdmId = localUserid;
+    } else {
+        rdmId = Math.ceil(Math.random() * 10000);
+        for (var i = 0; i < 2; i = 1) {
+            if (!userList.get(rdmId)) break;
+            else rdmId = Math.ceil(Math.random() * 10000);
+        }
+        localStorage.setItem("myUserId", rdmId);
     }
+     
     user = {
         username: '匿名者' + rdmId,
         userhead: 'http://rd.bigeergeek.com/admin/images/5.png',
@@ -53,7 +62,8 @@ function loadGuestMode() {
         userrole: '游客',
         roomid: roomid
     };
-    addUserToDic(user);
+    addUserToDic(user); // add to userlist
+    
     socket.emit('add user', user);
 }
 
@@ -187,7 +197,7 @@ function newDate(datestr) {
 */
 var latestShowNoticeTime = new Date("2009-07-13");
 function addChatMessage(user, msg, isMe, isHistory) {
-
+    console.log(roomid+"接到新的消息");
     var minute = 1000 * 60;
     var hour = minute * 60;
     var day = hour * 24;
