@@ -4,12 +4,20 @@
     <meta charset="UTF-8">
     <title></title>
     <meta name="viewport" content="initial-scale=1,width=device-width,maximum-scale=1,minimum-scale=1,user-scalable=no">
-    <link rel="stylesheet" href="css/aui.css" />
-    <link rel="stylesheet" href="css/userChating.css" />
+    <link rel="stylesheet" href="aui.css" />
+    <link rel="stylesheet" href="userChating.css" />
 </head>
 <body>
+    <!--
+    <div class="spinner">
+        <div class="dot1"></div>
+        <div class="dot2"></div>
+    </div>
+    -->
+    <img id="loading" src="images/loading.gif" style="position: fixed;top:30%;left:0;right:0;margin:0 auto;" />
     <section class="aui-chat">
         <div role="loadGif" style="width:100%;height:2rem;text-align: center;display:none"><img style="display: inline-block;height:100%;" src="images/loadPic.gif" /></div>
+
         <ul id="chatArea"></ul>
     </section>
     <div class="memberWrap">
@@ -26,13 +34,13 @@
         <img src="images/msgnotice.png" alt="Alternate Text" />
         <span>1</span>
     </div>
-    <!--<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>-->
-    <script src="js/jquery.min.js"></script>
+
+    <script src="jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/chatCore.js"></script>
-    <script src="js/dpt.js"></script>
-    <script src="js/saveAndLoad.js"></script>
-    <script src="js/dropload.min.js"></script>
+    <script src="chatCore.js"></script>
+    <script src="dpt.js"></script>
+    <script src="saveAndLoad.js"></script>
+    <script src="dropload.min.js"></script>
 
 </body>
 

@@ -68,34 +68,40 @@ function loadAjaxMsg(isHistory) {
         data: data,
         dataType: "json",
         success: function (e) {
-            switch (e.state) {
-                //if there are msgs
-                case 0:
-                    for (var i = e.msgInfos.length - 1; i >= 0; i--) {
-                        msgList.push(e.msgInfos[i]);
-                    }
-                    console.log("after push:" + msgList.length);
-                    currentFileNum = e.fileNum - 1; //let the msg datafile count reduce 1
-                    loadArrayMsg(isHistory); //after push,then show
-                    break;
-                //there are not msg
-                case 1:
-                    scrollflag = false; $("[role='loadGif']").hide();
-                    break;
-                case -1:
-                    scrollflag = false; $("[role='loadGif']").hide();
-                    addNotice(e.msg);
-                    break;
-            }
+            setTimeout(function () {
+                $("#loading").fadeOut(FADE_TIME);
+                switch (e.state) {
+                    //if there are msgs
+                    case 0:
+                        for (var i = e.msgInfos.length - 1; i >= 0; i--) {
+                            msgList.push(e.msgInfos[i]);
+                        }
+                        console.log("after push:" + msgList.length);
+                        currentFileNum = e.fileNum - 1; //let the msg datafile count reduce 1
+                        loadArrayMsg(isHistory); //after push,then show
+                        break;
+                    //there are not msg
+                    case 1:
+                        scrollflag = false; $("[role='loadGif']").hide();
+                        break;
+                    case -1:
+                        scrollflag = false; $("[role='loadGif']").hide();
+                        addNotice(e.msg);
+                        break;
+                }
+            }, 500);
+
         },
         error: function (e) {
             scrollflag = false; $("[role='loadGif']").hide();
+            $("#loading").fadeOut(FADE_TIME);
         }
     });
 }
 
 //read the msgList Array to show every msg
 function loadArrayMsg(isHistory) {
+
     //if thers is no msg datafile to read,and array has not clear yet,let the loadcount equals the Array length
     if (currentFileNum == 0 && msgList.length <= loadCount) {
         loadCount = msgList.length;

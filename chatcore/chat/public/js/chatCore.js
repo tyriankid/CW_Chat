@@ -5,13 +5,12 @@ var $currentInput = $inputMessage.focus();
 var $messages = $('#chatArea'); // Messages area
 var socket = io();
 var connected = false;
-var isIdValidate = false;
-var isMemberJoin = false;
-var currentRoomUserCount = 0;
+var isIdValidate = true;
+var currentRoomUserCount = 0; 
 var roomid = "";
 var hosterid = -1;
 var membersid = -1;
-var FADE_TIME = 350; // ms
+var FADE_TIME = 550; // ms
 var latestMsgDate = "";//最近一次聊天记录日期
 var scrollflag = true;
 var latestSendTime = ""; //最近一次发送聊天时间
@@ -24,15 +23,8 @@ var user = {
     userrole: '',
     roomid: roomid
 };
-
-//接收方
-var member = {
-    username: '',
-    userhead: '',
-    userid: -1,
-    userrole: '',
-    roomid: roomid
-}
+//all users here
+var userList = new Dic();
 
 var message = {
     roomid: roomid,
@@ -41,56 +33,27 @@ var message = {
     content: ''
 }
 
-
-
-function getUserInfo() {
-    if (!isIdValidate) return false;
-    var ajaxUrl = currentLocalhost + "/api/chatHandler.ashx?action=getUserInfoByIds&hosterid=" + hosterid + "&membersid=" + membersid;//+ "&jsoncallback=?";
-    $.ajax({
-        type: 'get', timeout: 10000,
-        async: false,
-        url: ajaxUrl,
-        dataType: "json",
-        success: function (e) {
-            if (e.Result == "OK" && e.Count > 1) {
-                user.username = e.HosterData[0].UserName;
-                user.userhead = e.HosterData[0].UserHead;
-                user.userid = e.HosterData[0].UserId;
-                user.userrole = e.HosterData[0].roleInfo;
-                user.roomid = roomid;
-                member.username = e.MemberData[0].UserName;
-                member.userhead = e.MemberData[0].UserHead;
-                member.userid = e.MemberData[0].UserId;
-                member.userrole = e.MemberData[0].roleInfo;
-                member.roomid = roomid;
-                // Tell the server your username
-                socket.emit('add user', user);
-
-                loadDialogList(user.userid);
-                //set title
-                $("title").html(member.username);
-            }
-            else {//if userid is not available,open guest mode
-                addNotice("非法的参数");
-                //loadGuestMode();
-            }
-        },
-        error: function () {
-            addNotice("非法的参数");
-            //loadGuestMode();
-        }
-    });
-
+//add user to the userlist
+function addUserToDic(user) {
+    userList.set(user.userid, user); 
 }
-
 
 
 //guest mode
 function loadGuestMode() {
-    user.username = '游客' + Math.ceil(Math.random() * 10000);
-    user.userhead = 'http://rd.bigeergeek.com/admin/images/5.png';
-    user.userid = -1;
-    user.userrole = '游客';
+    var rdmId = Math.ceil(Math.random() * 10000);
+    for (var i = 0; i < 2; i = 1) {
+        if (!userList.get(rdmId)) break;
+        else rdmId = Math.ceil(Math.random() * 10000);
+    }
+    user = {
+        username: '匿名者' + rdmId,
+        userhead: 'http://rd.bigeergeek.com/admin/images/5.png',
+        userid: -rdmId,
+        userrole: '游客',
+        roomid: roomid
+    };
+    addUserToDic(user);
     socket.emit('add user', user);
 }
 
@@ -381,9 +344,6 @@ $(function () {
     });
     //when user joined,add a notice
     socket.on('user joined', function (data) {
-        if (data.userid == member.userid) { //if reciver comes into current chatroom,ismemberjoin=true
-            isMemberJoin = true;
-        }
         currentRoomUserCount = data.roomusercount;
         console.log("当前人数:" + currentRoomUserCount);
         addNotice(data.username + "加入了对话");
@@ -400,10 +360,7 @@ $(function () {
 
 
     window.onload = function () {
-        if (GetQueryString("tp") == "wx") decodeRoomAttr('|');
-        else decodeRoomAttr('‎');
-        socket.emit('join room', roomid);
-        getUserInfo();
+        generateRoomId(loadGuestMode(),'multi');
     }
 
     // dropload
@@ -476,6 +433,25 @@ $(function () {
         }
     });
 });
+
+//generate roomid
+function generateRoomId(type,callback) {
+    var result;
+    switch (type) {
+        case "multi":
+            result = "tyrian";
+            break;
+        default:
+            break;
+    }
+    roomid = result;
+    socket.emit('join room', roomid);
+
+    if (typeof(callback) === "function") {
+        callback();
+    }
+    return result;
+}
 
 //like wechat, add a message to chat area
 function addNotice(msg, isHistory = false, important = true) {
@@ -655,33 +631,7 @@ inputhandler(main, function () {
     }
 });
 
-//get url paras
-function GetQueryString(name) {
-    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
-    var r = window.location.search.substr(1).match(reg);
-    if (r != null) return unescape(r[2]); return null;
-}
 
-function decodeRoomAttr(fgf) {
-    var attrs = (GetQueryString('k'));
-    var a = attrs.split(fgf);
-    var result = new Array();
-    for (var i = 0; i < a.length; i++) {
-        if (i <= 1)
-            result.push(a[i] ^ roomKey);
-        else if (i > 1 && i <= 3)
-            result.push(a[i] ^ attrKey);
-    }
-
-    roomid = result[0] + '‎' + result[1];
-    hosterid = result[2];
-    membersid = result[3];
-    if (roomid.indexOf(hosterid) < 0 || roomid.indexOf(membersid) < 0) {
-        addNotice("id不匹配");
-    } else {
-        isIdValidate = true;
-    }
-}
 
 
 
