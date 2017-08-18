@@ -1,5 +1,6 @@
 ﻿//var currentLocalhost = "http://localhost:57738"; //暂定值,以最终服务器域名为准
-var currentLocalhost = "http://cwwsc.bigeergeek.com"; //暂定值,以最终服务器域名为准
+//var currentLocalhost = "http://cwwsc.bigeergeek.com"; //暂定值,以最终服务器域名为准
+var currentLocalhost = "http://w17c283285.iok.la"; 
 /*
 * post the msgContent & info to storage
 * @date       2017-07-19

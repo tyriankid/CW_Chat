@@ -67,10 +67,8 @@ function sendMessage() {
         message = {
             roomid: roomid,
             userid: user.userid,
-            reciverid: member.userid,
             sendtime: new Date().Format("yyyy-MM-dd hh:mm:ss"),
             content: msg,
-            isread: currentRoomUserCount == 2 ? "1" : "0"
         }
         if (Date.parse(new Date()) - Date.parse(latestSendTime) <= 100) {
             addNotice("聊天消息发送太快，喝杯茶休息一下吧！");
@@ -78,7 +76,6 @@ function sendMessage() {
         }
         addChatMessage(user, message, true, false); //add chatinfo to chatdiv
         postMsg(message); //post messageinfo to storage
-        sendAlert(message); //send alert to user
         // tell server to execute 'new message' and send along one parameter
         socket.emit('new message', user, message);
         latestSendTime = new Date();
