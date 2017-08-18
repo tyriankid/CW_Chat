@@ -14,8 +14,8 @@ function postMsg(chatMsg) {
     var messageJson = JSON.stringify(msgarray);
     if (msgarray.length < 1) return false;
     //post the message json to storage
-    var data = { messageJson: messageJson} //{ messageJson: JSON.stringify(chatMsg) };
-    
+    var data = { messageJson: messageJson } //{ messageJson: JSON.stringify(chatMsg) };
+
     var ajaxUrl = currentLocalhost + "/api/chatHandler.ashx?action=saveChatMessage";
     $.ajax({
         type: 'POST',
@@ -45,7 +45,7 @@ function postMsg(chatMsg) {
 var currentMsgDivHeight = 0;
 var currentFileNum = -1;
 var msgList = new Array();
-var loadCount =10; //load message per draw
+var loadCount = 10; //load message per draw
 function loadMsg(isHistory) {
     if (msgList.length >= loadCount && currentFileNum != 0) {
         loadArrayMsg(isHistory);
@@ -68,34 +68,40 @@ function loadAjaxMsg(isHistory) {
         data: data,
         dataType: "json",
         success: function (e) {
-            switch (e.state) {
-                //if there are msgs
-                case 0:
-                    for (var i = e.msgInfos.length-1; i >=0 ; i--) {
-                        msgList.push(e.msgInfos[i]);
-                    }
-                    console.log("after push:" + msgList.length);
-                    currentFileNum = e.fileNum - 1; //let the msg datafile count reduce 1
-                    loadArrayMsg(isHistory); //after push,then show
-                    break;
-                //there are not msg
-                case 1:
-                    scrollflag = false; $("[role='loadGif']").hide();
-                    break;
-                case -1:
-                    scrollflag = false; $("[role='loadGif']").hide();
-                    addNotice(e.msg);
-                    break;
-            }
+            setTimeout(function () {
+                $("#loading").fadeOut(500);
+                switch (e.state) {
+                    //if there are msgs
+                    case 0:
+                        for (var i = e.msgInfos.length - 1; i >= 0; i--) {
+                            msgList.push(e.msgInfos[i]);
+                        }
+                        console.log("after push:" + msgList.length);
+                        currentFileNum = e.fileNum - 1; //let the msg datafile count reduce 1
+                        loadArrayMsg(isHistory); //after push,then show
+                        break;
+                    //there are not msg
+                    case 1:
+                        scrollflag = false; $("[role='loadGif']").hide();
+                        break;
+                    case -1:
+                        scrollflag = false; $("[role='loadGif']").hide();
+                        addNotice(e.msg);
+                        break;
+                }
+            }, 500);
+
         },
         error: function (e) {
             scrollflag = false; $("[role='loadGif']").hide();
+            $("#loading").fadeOut(500);
         }
     });
 }
 
 //read the msgList Array to show every msg
 function loadArrayMsg(isHistory) {
+
     //if thers is no msg datafile to read,and array has not clear yet,let the loadcount equals the Array length
     if (currentFileNum == 0 && msgList.length <= loadCount) {
         loadCount = msgList.length;
@@ -113,7 +119,7 @@ function loadArrayMsg(isHistory) {
             msgList.splice(0, (loadCount - k)); //当循环没有完毕时,循环数为每页加载数-k
             break;
         }
-        
+
         var hosterHistoryMsg = {
             roomid: msgList[k].roomid,
             userid: msgList[k].userid,
@@ -140,7 +146,7 @@ function loadArrayMsg(isHistory) {
     } else {
         scrollflag = true;
     }
-    
+
 }
 
 /*
@@ -168,15 +174,15 @@ function loadDialogList(userid) {
                             var attrstr = getChatAttrs(e.Data[i].FQUserId, e.Data[i].JSUserId);
                             $chatInfoLi.find("a").attr("href", locationstr + escape(attrstr));
                             //$chatInfoLi.find("a").attr("href", "http://localhost:3000/userChat.html?k=" + compileStr("&hosterid=" + e.Data[i].FQUserId + "&membersid=" + e.Data[i].JSUserId + "&id=" + e.Data[i].RoomNum));
-                        }    
-                        else{
+                        }
+                        else {
                             $chatInfoLi = $('<li  reciverId="' + e.Data[i].FQUserId + '"><a><span class="role">' + e.Data[i].FQRoleInfo + '</span><span class="rolePic"><img src="' + e.Data[i].FQUserHead + '" /></span><span class="roleName">' + e.Data[i].FQUserName + '</span></a></li>');
                             var attrstr = getChatAttrs(e.Data[i].JSUserId, e.Data[i].FQUserId);
                             $chatInfoLi.find("a").attr("href", locationstr + escape(attrstr));
                         }
                         //获取当前双方最近一次聊天记录的时间
                         if ((e.Data[i].FQUserId == user.userid && e.Data[i].JSUserId == member.userid) || (e.Data[i].FQUserId == member.userid && e.Data[i].JSUserId == user.userid)) {
-                            latestMsgDate = e.Data[i].CreateTime.replace("T"," ");
+                            latestMsgDate = e.Data[i].CreateTime.replace("T", " ");
                         }
                         var $chatList = $(".personList");
                         $chatList.prepend($chatInfoLi);
@@ -184,12 +190,12 @@ function loadDialogList(userid) {
                     loadMsg(true); //load the history msgs
                     break;
                 default:
-                    if (e.msg) { addNotice(e.msg);}
+                    if (e.msg) { addNotice(e.msg); }
                     break;
             }
         },
         error: function (e) {
-            
+
         }
     });
 }

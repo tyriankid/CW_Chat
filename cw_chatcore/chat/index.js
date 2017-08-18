@@ -30,8 +30,7 @@ io.on('connection', function (socket) {
             roomName = roomname;
     });
 
-  var addedUser = false;
-    
+
 
   // when the client emits 'new message', this listens and executes
   socket.on('new message', function (user,msg) {
@@ -60,12 +59,16 @@ io.on('connection', function (socket) {
 
   // when the client emits 'add user', this listens and executes
   socket.on('add user', function (user) {
-      if (addedUser) return;
+      if (UserCurrentInfoArray.get(user.userid)) {
+          return;
+      }
       //set currentUser Chatroom
       UserCurrentInfoArray.set(user.userid, user.roomid);
       //set currentRoom Usercount
       var currentRoomUserCount = RoomCurrentUsercountArray.get(user.roomid);
-      console.log("room " + user.roomid+" before user add:"+RoomCurrentUsercountArray.get(user.roomid));
+      console.log("room " + user.roomid + " before user add:" + RoomCurrentUsercountArray.get(user.roomid));
+
+
       if (currentRoomUserCount && currentRoomUserCount >= 0) {
           currentRoomUserCount++;
           RoomCurrentUsercountArray.set(user.roomid, currentRoomUserCount);
@@ -99,7 +102,9 @@ io.on('connection', function (socket) {
 
   // when the user disconnects.. perform this
   socket.on('disconnect', function () {
-      if (addedUser) {
+      if (!UserCurrentInfoArray.get(socket.userid)) {
+          return;
+      }
           //set currentRoom usercount = usercount-1
           var leftRoomId = UserCurrentInfoArray.get(socket.userid);
           var leftRoomUserCount = RoomCurrentUsercountArray.get(leftRoomId);
@@ -116,7 +121,7 @@ io.on('connection', function (socket) {
               userid: socket.userid,
               roomusercount: leftRoomUserCount
       });
-    }
+    
   });
 });
 

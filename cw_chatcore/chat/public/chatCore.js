@@ -349,7 +349,7 @@ function addMessageElement(isHistory, isMe) {
     if (isFirstLoadMsg && isMe) {
         $("body")[0].scrollTop = $("body").height(); //keep the latest message always jumping out
     }
-
+    
     
 }
 
@@ -436,7 +436,6 @@ $(function () {
         }
     });
 
-
     $(".messNoticeBox").click(function () {
         $("body")[0].scrollTop = $("body").height();
         notreadmsgBubbleNum = 0;
@@ -476,8 +475,6 @@ $(function () {
             }
         }
     });
-
-
 });
 
 //like wechat, add a message to chat area
