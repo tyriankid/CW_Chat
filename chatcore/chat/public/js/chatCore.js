@@ -39,33 +39,7 @@ function addUserToDic(user) {
 }
 
 
-//guest mode
-function loadGuestMode() {
-    
-    var localUserid = localStorage.getItem("myUserId");
-    var rdmId;
-    if (localUserid) {
-        rdmId = localUserid;
-    } else {
-        rdmId = Math.ceil(Math.random() * 10000);
-        for (var i = 0; i < 2; i = 1) {
-            if (!userList.get(rdmId)) break;
-            else rdmId = Math.ceil(Math.random() * 10000);
-        }
-        localStorage.setItem("myUserId", rdmId);
-    }
-     
-    user = {
-        username: '匿名者' + rdmId,
-        userhead: 'http://rd.bigeergeek.com/admin/images/5.png',
-        userid: -rdmId,
-        userrole: '游客',
-        roomid: roomid
-    };
-    addUserToDic(user); // add to userlist
-    
-    socket.emit('add user', user);
-}
+
 
 function sendMessage() {
     var msg = $inputMessage.val();
@@ -367,7 +341,8 @@ $(function () {
 
 
     window.onload = function () {
-        generateRoomId('multi', loadGuestMode());
+        roomid = generateRoomId('multi');
+        loadGuestMode();
     }
 
     // dropload
@@ -442,7 +417,7 @@ $(function () {
 });
 
 //generate roomid
-function generateRoomId(type,callback) {
+function generateRoomId(type) {
     var result;
     switch (type) {
         case "multi":
@@ -451,17 +426,37 @@ function generateRoomId(type,callback) {
         default:
             break;
     }
-    roomid = result;
-    socket.emit('join room', roomid);
-
-    if (typeof(callback) === "function") {
-        callback();
-    }
+    socket.emit('join room', result);
     return result;
 }
 
+//guest mode
+function loadGuestMode() {
+    var localUserid = localStorage.getItem("myUserId");
+    var rdmId;
+    if (localUserid) {
+        rdmId = localUserid;
+    } else {
+        rdmId = Math.ceil(Math.random() * 10000);
+        for (var i = 0; i < 2; i = 1) {
+            if (!userList.get(rdmId)) break;
+            else rdmId = Math.ceil(Math.random() * 10000);
+        }
+        localStorage.setItem("myUserId", rdmId);
+    }
+    user = {
+        username: '匿名者' + rdmId,
+        userhead: 'http://rd.bigeergeek.com/admin/images/5.png',
+        userid: rdmId,
+        userrole: '游客',
+        roomid: roomid
+    };
+    addUserToDic(user); // add to userlist
+    socket.emit('add user', user);
+}
+
 //like wechat, add a message to chat area
-function addNotice(msg, isHistory = false, important = true) {
+function addNotice(msg, isHistory) {
     var $noticeDiv = '<div class="noticeBox"><span class="noticeMessage">' + msg + '</span></div>';
     if (isHistory) {
         $historyUl.append($noticeDiv);
