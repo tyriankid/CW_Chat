@@ -360,7 +360,7 @@ $(function () {
 
 
     window.onload = function () {
-        generateRoomId(loadGuestMode(),'multi');
+        generateRoomId('multi', loadGuestMode());
     }
 
     // dropload
