@@ -26,6 +26,10 @@ function postMsg(chatMsg) {
             switch (e.state) {
                 case 0: //success,then clear the msgarray
                     msgarray.splice(0, msgarray.length);
+                    //disabled the loading effect
+                    setTimeout(function () {
+                        $("[loading='1']").removeClass("loading-content-right").removeAttr("loading");
+                    }, 200);
                     break;
                 default:
                     break;

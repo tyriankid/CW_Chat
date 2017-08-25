@@ -114,7 +114,7 @@ function sendMessage() {
             return;
         }
         addChatMessage(user, message, true, false); //add chatinfo to chatdiv
-        postMsg(message); //post messageinfo to storage
+        
         sendAlert(message); //send alert to user
         // tell server to execute 'new message' and send along one parameter
         socket.emit('new message', user, message);
@@ -285,16 +285,18 @@ function addChatMessage(user, msg, isMe, isHistory) {
             + ' <img src="' + user.userhead + '" />'
             + '</div>'
             + '    <div class="aui-chat-content">'
-            + '      <div class="aui-chat-arrow"></div>'
+            + '      <div class="aui-chat-arrow"></div><div>'
             + msg.content
-            + '   </div>'
+            + '  </div><div style="height: 100%;width:1px;position:relative;"></div> </div>'
             + ' </div>'
             + ' </div></li>');
+
     //addMessageElement($messageDiv, isHistory);
 
     $historyUl.append($messageDiv);  //暂放到ul内,待提交
     if (!isHistory) {
-        addMessageElement(isHistory,isMe);
+        addMessageElement(isHistory, isMe);
+        postMsg(msg); //post messageinfo to storage
     }
     
 }
@@ -306,8 +308,11 @@ function cleanInput(input) {
     return $('<div/>').text(input).text();
 }
 
-function inputMsg() {
-    $historyUl.hide().fadeIn(FADE_TIME);
+function inputMsg(isHistory) {
+    if (!isHistory) {
+        console.log($historyUl.find(".aui-chat-content").length);
+        $historyUl.find(".aui-chat-content").addClass("loading-content-right").attr("loading","1");
+    }
     $messages.append($historyUl.html());
     $historyUl.html('');
 }
@@ -335,12 +340,12 @@ function addMessageElement(isHistory, isMe) {
         if (($(document).height()) > totalheight && !isMe) {  //没有到底收到消息时,展示泡泡
             notreadmsgBubbleNum++;
             $(".messNoticeBox").show().find("span").html(notreadmsgBubbleNum).css("left", notreadmsgBubbleNum >= 10 ? "20%" : "35%");
-            inputMsg();
+            inputMsg(isHistory);
         } else if (($(document).height()) <= totalheight && !isMe) {  //到底了收到消息时,继续到底
-            inputMsg();
+            inputMsg(isHistory);
             $("body")[0].scrollTop = $("body").height();
         } else if (isMe){ //自己发消息时永远在最底部
-            inputMsg();
+            inputMsg(isHistory);
             $("body")[0].scrollTop = $("body").height();
         }
     }
