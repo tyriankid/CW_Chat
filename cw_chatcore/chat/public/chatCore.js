@@ -294,9 +294,11 @@ function addChatMessage(user, msg, isMe, isHistory) {
     //addMessageElement($messageDiv, isHistory);
 
     $historyUl.append($messageDiv);  //暂放到ul内,待提交
-    if (!isHistory) {
+    if (!isHistory && isMe) {
         addMessageElement(isHistory, isMe);
         postMsg(msg); //post messageinfo to storage
+    } else if (!isHistory && !isMe) {
+        addMessageElement(isHistory, isMe);
     }
     
 }
@@ -308,10 +310,10 @@ function cleanInput(input) {
     return $('<div/>').text(input).text();
 }
 
-function inputMsg(isHistory) {
-    if (!isHistory) {
+function inputMsg(isHistory, isMe) {
+    if (!isHistory && isMe) {
         console.log($historyUl.find(".aui-chat-content").length);
-        $historyUl.find(".aui-chat-content").addClass("loading-content-right").attr("loading","1");
+        $historyUl.find(".aui-chat-content").addClass("loading-content-right").attr("loading", "1");
     }
     $messages.append($historyUl.html());
     $historyUl.html('');
@@ -340,12 +342,12 @@ function addMessageElement(isHistory, isMe) {
         if (($(document).height()) > totalheight && !isMe) {  //没有到底收到消息时,展示泡泡
             notreadmsgBubbleNum++;
             $(".messNoticeBox").show().find("span").html(notreadmsgBubbleNum).css("left", notreadmsgBubbleNum >= 10 ? "20%" : "35%");
-            inputMsg(isHistory);
+            inputMsg(isHistory, isMe);
         } else if (($(document).height()) <= totalheight && !isMe) {  //到底了收到消息时,继续到底
-            inputMsg(isHistory);
+            inputMsg(isHistory, isMe);
             $("body")[0].scrollTop = $("body").height();
         } else if (isMe){ //自己发消息时永远在最底部
-            inputMsg(isHistory);
+            inputMsg(isHistory, isMe);
             $("body")[0].scrollTop = $("body").height();
         }
     }

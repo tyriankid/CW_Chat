@@ -9,6 +9,7 @@ var currentLocalhost = "http://cwwsc.bigeergeek.com"; //暂定值,以最终服�
 var msgStr = "[]";
 var msgarray = eval('(' + msgStr + ')');
 function postMsg(chatMsg) {
+    console.log(chatMsg.content);
     //let the message object become to a json
     msgarray.push(chatMsg);
     var messageJson = JSON.stringify(msgarray);
